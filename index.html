@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mijn Lijstje</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="header-logo">
+            <span>🎁</span> Wonder Lijstjes
+        </a>
+        
+        <!-- Hamburger Button -->
+        <button class="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
+
+        <div id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
+        <!-- Navigatie & Auth Container -->
+        <div class="desktop-nav" id="desktop-nav">
+            <button class="close-menu-btn" onclick="toggleMobileMenu()">&times;</button>
+            <div class="header-nav">
+                <a href="/" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                    <span>✨</span> Nieuw lijstje
+                </a>
+                <a href="#" id="nav-my-lists" onclick="openMyListsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 6px;">
+                    <span>📋</span> Mijn Lijstjes
+                </a>
+            </div>
+
+            <div class="header-right" id="auth-section">
+                <button class="login-btn" id="btn-open-login" onclick="if(window.innerWidth<=800) toggleMobileMenu()">Log in met Wonder ID</button>
+                <div id="logged-in-user" style="display: none; align-items: center; gap: 15px;">
+                    <span id="user-email" class="font-semibold"></span>
+                    <button class="btn-cancel" id="btn-logout" style="padding: 8px 16px;">Uitloggen</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="app">
+        <!-- Lader -->
+        <div id="loader-view" style="text-align:center; padding: 100px; display: none;">
+            <div class="text-light" style="font-size: 1.5rem; font-weight: bold;">Laden...</div>
+        </div>
+
+        <!-- Homepage Weergave -->
+        <div id="homepage-view" style="display: none;">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">Welkom bij jouw persoonlijke lijstje</h1>
+                    <p class="hero-subtitle">Verzamel, deel en krijg precies wat je écht wil hebben.</p>
+                    
+                    <div class="action-card">
+                        <div id="create-mode">
+                            <input type="text" id="username" class="search-input" placeholder="Kies je unieke link (bijv. max)" style="margin-bottom: 1.5rem;">
+                            <button class="btn-primary" id="btn-open-create-modal">Start mijn lijstje</button>
+                            <p id="login-warning" class="text-error font-semibold" style="font-size: 0.95rem; margin-top: 15px; display: none;">Je moet ingelogd zijn met je Wonder ID!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="how-it-works-section">
+                <h2 class="how-it-works-title">Hoe het werkt</h2>
+                <div class="info-cards-container">
+                    <div class="info-card">
+                        <h3><span style="font-size: 1.8rem;">🎨</span> 1. Maak je lijstje</h3>
+                        <p>Kies een unieke naam, upload een leuke foto uit je galerij, en je lijstje is direct online in een premium design!</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><span style="font-size: 1.8rem;">🔗</span> 2. Cadeaus importeren</h3>
+                        <p>Plak simpelweg een link van een webshop (zoals Bol.com). Wij halen automatisch de foto en titel voor je op!</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><span style="font-size: 1.8rem;">✨</span> 3. Deel & Streep af</h3>
+                        <p>Deel de link met vrienden. Zij kunnen cadeautjes afstrepen, zodat je nooit meer iets dubbel krijgt. (Jij ziet dit zelf niet!)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lijst Weergave -->
+        <div id="list-view" style="display: none;">
+            <div class="list-layout" style="justify-content: center;">
+                <!-- Hoofdcontent -->
+                <main class="main-content" style="max-width: 800px; width: 100%;">
+                    <div class="profile-section">
+                        <div class="profile-pic" id="profile-pic-element"></div>
+                        <div class="profile-info">
+                            <h2 id="profile-title" style="text-transform: capitalize;"></h2>
+                            <p id="profile-admin"><span>👤</span> Beheerder: </p>
+                            <p><span>🏠</span> Nederland</p>
+                            <div id="profile-event-info"></div>
+                            
+                            <!-- Knoppen voor de beheerder -->
+                            <div id="owner-controls" style="display: none; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 6px 14px; font-size: 0.9rem;">🔗 Link kopiëren</button>
+                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 6px; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; background: var(--blue-btn);">✏️</button>
+                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 6px 14px; font-size: 0.9rem; background: var(--blue-btn); color: var(--primary);">+ Categorie</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="categories-wrapper">
+                        <!-- Categorieën en cadeaus worden hier gerenderd via JS -->
+                    </div>
+                    
+                    <div id="owner-add-section" style="display: none; margin-top: 20px;">
+                        <button id="btn-open-add-modal" class="btn-add-modal">
+                            <span class="text-primary" style="font-size: 1.5rem;">+</span> Cadeau toevoegen
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="error-view" style="display: none; text-align: center; padding: 100px;">
+            <h2 class="text-primary" style="font-size: 2.5rem; margin-bottom: 1rem;">Oeps!</h2>
+            <p id="error-message" class="text-light" style="font-size: 1.2rem;"></p>
+            <br><br>
+            <a href="/" class="login-btn" style="text-decoration:none; display:inline-block;">Terug naar home</a>
+        </div>
+    </div>
+
+    <!-- Modal Login -->
+    <div id="modal-login" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 style="text-align: center;">Inloggen met Wonder ID</h3>
+            <div class="form-group">
+                <label>E-mailadres</label>
+                <input type="email" id="login-email" placeholder="jouw@email.nl">
+            </div>
+            <div class="form-group">
+                <label>Wachtwoord</label>
+                <input type="password" id="login-password" placeholder="••••••••">
+            </div>
+            <div class="modal-actions" style="justify-content: center; flex-direction: column; gap: 10px;">
+                <button class="btn-confirm" id="btn-confirm-login" style="width: 100%;">Inloggen</button>
+                <button class="btn-cancel" onclick="closeModals()" style="width: 100%;">Annuleren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Create List -->
+    <div id="modal-create-list" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Lijstje personaliseren</h3>
+            <p class="text-light" style="margin-bottom: 1.5rem;">Maak je lijstje persoonlijk met een foto uit je galerij!</p>
+            
+            <div class="form-group">
+                <label>Jouw unieke link</label>
+                <input type="text" id="modal-list-name" disabled>
+            </div>
+            <div class="form-group">
+                <label>Profielfoto (Uploaden uit galerij)</label>
+                <label class="file-upload-label">
+                    <input type="file" id="modal-profile-pic" accept="image/*" onchange="updateFileName(this)">
+                    <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
+                </label>
+            </div>
+            
+            <div style="display:flex; gap:15px; margin-bottom: 1.5rem;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <label>Datum (Optioneel)</label>
+                    <input type="date" id="modal-list-date">
+                </div>
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <label>Waarvoor? (Optioneel)</label>
+                    <input type="text" id="modal-list-occasion" placeholder="Bijv. Verjaardag">
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
+                <button class="btn-confirm" id="btn-confirm-create">Lijstje aanmaken</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit List -->
+    <div id="modal-edit-list" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Lijstje bewerken</h3>
+            
+            <div class="form-group">
+                <label>Naam (en link) aanpassen</label>
+                <input type="text" id="edit-list-name">
+                <small class="text-light">Let op: Als je dit aanpast, verandert ook je weblink!</small>
+            </div>
+            <div class="form-group">
+                <label>Nieuwe profielfoto uploaden</label>
+                <label class="file-upload-label">
+                    <input type="file" id="edit-profile-pic" accept="image/*" onchange="updateFileName(this)">
+                    <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
+                </label>
+            </div>
+            
+            <div style="display:flex; gap:15px; margin-bottom: 1.5rem;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <label>Datum (Optioneel)</label>
+                    <input type="date" id="edit-list-date">
+                </div>
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <label>Waarvoor? (Optioneel)</label>
+                    <input type="text" id="edit-list-occasion" placeholder="Bijv. Bruiloft">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="edit-show-afgestreept" style="width: 20px; height: 20px;">
+                    Zelf kunnen zien welke cadeaus al zijn afgestreept
+                </label>
+            </div>
+            
+            <hr style="border:0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-cancel" style="background: #fee2e2; color: #ef4444;" onclick="deleteList()">Lijstje verwijderen</button>
+                
+                <div class="modal-actions" style="margin-top: 0;">
+                    <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
+                    <button class="btn-confirm" id="btn-confirm-edit-list" onclick="saveListEdit()">Opslaan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add Item -->
+    <div id="modal-add-item" class="modal-overlay">
+        <div class="modal-content" style="max-width: 650px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                <h3 style="margin-bottom:0;">Cadeau Toevoegen</h3>
+                <button onclick="closeModals()" style="background:transparent; border:none; font-size:1.8rem; cursor:pointer; color:var(--text-light); line-height:1;" title="Sluiten">&times;</button>
+            </div>
+            
+            <div class="modal-tabs">
+                <div class="modal-tab active" id="tab-search" onclick="switchAddTab('search')">🔗 Link importeren</div>
+                <div class="modal-tab" id="tab-manual" onclick="switchAddTab('manual')">✍️ Zelf invullen</div>
+            </div>
+
+            <div id="view-search">
+                <p class="text-light" style="margin-bottom: 15px;">Plak de link van een product (bijv. van Bol.com of Coolblue). Wij halen de foto en titel voor je op!</p>
+                <div class="form-group" style="display:flex; gap: 10px;">
+                    <input type="url" id="import-url" placeholder="https://www.bol.com/nl/nl/p/..." style="flex:1;">
+                    <button class="btn-confirm" id="btn-do-import">Importeer</button>
+                </div>
+                <div id="import-loading" class="text-primary font-bold" style="display:none; text-align:center; padding:20px;">Gegevens ophalen...</div>
+                <div id="import-error" class="text-error font-bold" style="display:none; text-align:center; padding:10px;">Kon de link niet uitlezen. Probeer het zelf in te vullen.</div>
+            </div>
+
+            <div id="view-manual" style="display:none;">
+                <div class="form-group">
+                    <label>Titel van het cadeau *</label>
+                    <input type="text" id="modal-item-title" placeholder="Bijv. Bluetooth Koptelefoon">
+                </div>
+                <div class="form-group">
+                    <label>In welke categorie?</label>
+                    <select id="modal-item-category" style="width: 100%; padding: 14px 16px; border: 2px solid var(--border-color); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-main); font-size: 1rem; font-family: 'Inter';">
+                        <!-- Gevuld via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Prijs (Optioneel)</label>
+                    <input type="text" id="modal-item-price" placeholder="€ 29,95">
+                </div>
+                <div class="form-group">
+                    <label>Webshop Link (Optioneel)</label>
+                    <input type="text" id="modal-item-url" placeholder="https://bol.com/...">
+                </div>
+                <div class="form-group">
+                    <label>Foto uploaden (Optioneel)</label>
+                    <label class="file-upload-label">
+                        <input type="file" id="modal-item-img" accept="image/*" onchange="updateFileName(this)">
+                        <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
+                    </label>
+                </div>
+                <input type="hidden" id="modal-item-img-url">
+                
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
+                    <button class="btn-confirm" id="btn-confirm-add-item">Cadeau opslaan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mijn Lijstjes -->
+    <div id="modal-my-lists" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Mijn Lijstjes</h3>
+            <div id="my-lists-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
+                <!-- Lijstjes via JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Sluiten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Gift -->
+    <div id="modal-edit-gift" class="modal-overlay">
+        <div class="modal-content" style="max-width: 650px;">
+            <h3>Cadeau Bewerken</h3>
+            <input type="hidden" id="edit-gift-id">
+            
+            <div class="form-group">
+                <label>Titel van het cadeau *</label>
+                <input type="text" id="edit-gift-title">
+            </div>
+            <div class="form-group">
+                <label>Prijs (Optioneel)</label>
+                <input type="text" id="edit-gift-price">
+            </div>
+            <div class="form-group">
+                <label>Webshop Link (Optioneel)</label>
+                <input type="text" id="edit-gift-url">
+            </div>
+            <div class="form-group">
+                <label>Nieuwe foto uploaden (Oude foto wordt vervangen)</label>
+                <label class="file-upload-label">
+                    <input type="file" id="edit-gift-img" accept="image/*" onchange="updateFileName(this)">
+                    <span class="file-name-display">📸 Klik hier om een nieuwe foto te kiezen</span>
+                </label>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
+                <button class="btn-confirm" id="btn-confirm-edit-gift" onclick="saveGiftEdit()">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.21.1/pocketbase.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.error('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
