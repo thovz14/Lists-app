@@ -2,7 +2,7 @@ import http.server
 import socketserver
 import os
 
-PORT = 5454
+PORT = 5455
 
 class SPAHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):

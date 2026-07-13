@@ -10,9 +10,9 @@
 
 :root {
     /* Basis thema variabelen (Light Mode) */
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --secondary: #ec4899;
+    --primary: #eab308;
+    --primary-hover: #ca8a04;
+    --secondary: #f59e0b;
     --text-main: #0f172a;
     --text-light: #475569;
     --bg-color: #f1f5f9;
@@ -27,11 +27,11 @@
     --radius-md: 16px;
     --radius-sm: 8px;
     --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 20px 40px -10px rgba(99, 102, 241, 0.15);
+    --shadow-hover: 0 20px 40px -10px rgba(234, 179, 8, 0.15);
     
     /* Achtergrond accenten */
-    --bg-grad-1: rgba(99, 102, 241, 0.05);
-    --bg-grad-2: rgba(236, 72, 153, 0.05);
+    --bg-grad-1: rgba(234, 179, 8, 0.05);
+    --bg-grad-2: rgba(245, 158, 11, 0.05);
     --header-bg: rgba(255, 255, 255, 0.8);
     --modal-overlay: rgba(15, 23, 42, 0.4);
     --input-bg: #f8fafc;
@@ -49,10 +49,10 @@
         --blue-text: #e2e8f0;
         
         --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-        --shadow-hover: 0 20px 40px -10px rgba(99, 102, 241, 0.3);
+        --shadow-hover: 0 20px 40px -10px rgba(234, 179, 8, 0.3);
         
-        --bg-grad-1: rgba(99, 102, 241, 0.15);
-        --bg-grad-2: rgba(236, 72, 153, 0.15);
+        --bg-grad-1: rgba(234, 179, 8, 0.15);
+        --bg-grad-2: rgba(245, 158, 11, 0.15);
         --header-bg: rgba(30, 41, 59, 0.8);
         --modal-overlay: rgba(0, 0, 0, 0.7);
         --input-bg: #0f172a;
@@ -107,6 +107,7 @@ body {
     text-decoration: none;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -208,7 +209,7 @@ body {
 }
 
 .action-card .btn-primary {
-    background: linear-gradient(135deg, var(--primary), #818cf8);
+    background: linear-gradient(135deg, var(--primary), #fde047);
     color: white;
     border: none;
     width: 100%;
@@ -219,12 +220,12 @@ body {
     margin-bottom: 1rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
 }
 
 .action-card .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 8px 25px rgba(234, 179, 8, 0.4);
 }
 
 .search-input {
@@ -241,7 +242,7 @@ body {
     outline: none;
     border-color: var(--primary);
     background: var(--card-bg);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1);
 }
 
 /* Info Cards */
@@ -455,7 +456,7 @@ body {
 .item-details a {
     color: var(--primary);
     text-decoration: none;
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(234, 179, 8, 0.1);
     padding: 4px 10px;
     border-radius: 100px;
     font-size: 0.85rem;
@@ -463,7 +464,7 @@ body {
     margin-left: 10px;
 }
 .item-details a:hover {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(234, 179, 8, 0.2);
 }
 
 /* Afstrepen knop */
@@ -477,7 +478,7 @@ body {
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 10px rgba(234, 179, 8, 0.2);
 }
 
 .btn-afstrepen:hover {
@@ -514,7 +515,7 @@ body {
 .btn-add-modal:hover {
     border-color: var(--primary);
     color: var(--primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(234, 179, 8, 0.05);
 }
 
 /* Modals */
@@ -648,7 +649,7 @@ body {
     cursor: pointer;
     font-weight: 600;
     transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
 }
 .btn-confirm:hover {
     background: var(--primary-hover);
@@ -690,6 +691,7 @@ body {
     margin-bottom: 5px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     color: var(--text-main);

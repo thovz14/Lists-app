@@ -13,7 +13,7 @@
 <body>
     <header class="header">
         <a href="/" class="header-logo">
-            <span>🎁</span> Wonder Lijstjes
+            <span style="-webkit-text-fill-color: initial; background: none;">🎁</span> Wonder Lijstjes
         </a>
         
         <!-- Hamburger Button -->
@@ -31,10 +31,14 @@
                 <a href="#" id="nav-my-lists" onclick="openMyListsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 6px;">
                     <span>📋</span> Mijn Lijstjes
                 </a>
+                <a href="#" id="nav-notifications" onclick="openNotificationsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 6px; position: relative;">
+                    <span>🔔</span> Meldingen
+                    <span id="notif-badge" style="display:none; position:absolute; top:-5px; right:-10px; background:var(--error-color); color:white; border-radius:50%; font-size:0.7rem; padding:2px 6px;">0</span>
+                </a>
             </div>
 
             <div class="header-right" id="auth-section">
-                <button class="login-btn" id="btn-open-login" onclick="if(window.innerWidth<=800) toggleMobileMenu()">Log in met Wonder ID</button>
+                <a href="/login.html" class="login-btn" id="btn-open-login" style="text-decoration:none; display:inline-block;">Log in met Wonder ID</a>
                 <div id="logged-in-user" style="display: none; align-items: center; gap: 15px;">
                     <span id="user-email" class="font-semibold"></span>
                     <button class="btn-cancel" id="btn-logout" style="padding: 8px 16px;">Uitloggen</button>
@@ -60,7 +64,7 @@
                         <div id="create-mode">
                             <input type="text" id="username" class="search-input" placeholder="Kies je unieke link (bijv. max)" style="margin-bottom: 1.5rem;">
                             <button class="btn-primary" id="btn-open-create-modal">Start mijn lijstje</button>
-                            <p id="login-warning" class="text-error font-semibold" style="font-size: 0.95rem; margin-top: 15px; display: none;">Je moet ingelogd zijn met je Wonder ID!</p>
+                            <p id="login-warning" class="text-error font-semibold" style="font-size: 0.95rem; margin-top: 15px; display: none;">Je moet ingelogd zijn met je Wonder ID! <a href="/login.html" style="color: var(--primary);">Log nu in</a></p>
                         </div>
                     </div>
                 </div>
@@ -100,9 +104,9 @@
                             
                             <!-- Knoppen voor de beheerder -->
                             <div id="owner-controls" style="display: none; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 6px 14px; font-size: 0.9rem;">🔗 Link kopiëren</button>
-                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 6px; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; background: var(--blue-btn);">✏️</button>
-                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 6px 14px; font-size: 0.9rem; background: var(--blue-btn); color: var(--primary);">+ Categorie</button>
+                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 6px 14px; font-size: 0.9rem;">🔗 Delen</button>
+                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 6px 14px; font-size: 0.9rem;">+ Categorie</button>
+                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 6px 14px; font-size: 0.9rem; background: var(--blue-btn); color: var(--primary);">⚙️ Instellingen</button>
                             </div>
                         </div>
                     </div>
@@ -125,25 +129,6 @@
             <p id="error-message" class="text-light" style="font-size: 1.2rem;"></p>
             <br><br>
             <a href="/" class="login-btn" style="text-decoration:none; display:inline-block;">Terug naar home</a>
-        </div>
-    </div>
-
-    <!-- Modal Login -->
-    <div id="modal-login" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
-            <h3 style="text-align: center;">Inloggen met Wonder ID</h3>
-            <div class="form-group">
-                <label>E-mailadres</label>
-                <input type="email" id="login-email" placeholder="jouw@email.nl">
-            </div>
-            <div class="form-group">
-                <label>Wachtwoord</label>
-                <input type="password" id="login-password" placeholder="••••••••">
-            </div>
-            <div class="modal-actions" style="justify-content: center; flex-direction: column; gap: 10px;">
-                <button class="btn-confirm" id="btn-confirm-login" style="width: 100%;">Inloggen</button>
-                <button class="btn-cancel" onclick="closeModals()" style="width: 100%;">Annuleren</button>
-            </div>
         </div>
     </div>
 
@@ -185,49 +170,83 @@
 
     <!-- Modal Edit List -->
     <div id="modal-edit-list" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Lijstje bewerken</h3>
+        <div class="modal-content" style="max-width: 550px;">
+            <h3>Lijstje instellingen</h3>
             
-            <div class="form-group">
-                <label>Naam (en link) aanpassen</label>
-                <input type="text" id="edit-list-name">
-                <small class="text-light">Let op: Als je dit aanpast, verandert ook je weblink!</small>
+            <div class="modal-tabs">
+                <div class="modal-tab active" id="tab-edit-general" onclick="switchEditListTab('general')">⚙️ Algemeen</div>
+                <div class="modal-tab" id="tab-edit-admins" onclick="switchEditListTab('admins')">👥 Beheerders</div>
             </div>
-            <div class="form-group">
-                <label>Nieuwe profielfoto uploaden</label>
-                <label class="file-upload-label">
-                    <input type="file" id="edit-profile-pic" accept="image/*" onchange="updateFileName(this)">
-                    <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
-                </label>
-            </div>
-            
-            <div style="display:flex; gap:15px; margin-bottom: 1.5rem;">
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                    <label>Datum (Optioneel)</label>
-                    <input type="date" id="edit-list-date">
+
+            <div id="view-edit-general">
+                <div class="form-group">
+                    <label>Naam (en link) aanpassen</label>
+                    <input type="text" id="edit-list-name">
+                    <small class="text-light">Let op: Als je dit aanpast, verandert ook je weblink!</small>
                 </div>
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                    <label>Waarvoor? (Optioneel)</label>
-                    <input type="text" id="edit-list-occasion" placeholder="Bijv. Bruiloft">
+                <div class="form-group">
+                    <label>Nieuwe profielfoto uploaden</label>
+                    <label class="file-upload-label">
+                        <input type="file" id="edit-profile-pic" accept="image/*" onchange="updateFileName(this)">
+                        <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
+                    </label>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" id="edit-show-afgestreept" style="width: 20px; height: 20px;">
-                    Zelf kunnen zien welke cadeaus al zijn afgestreept
-                </label>
-            </div>
-            
-            <hr style="border:0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <button class="btn-cancel" style="background: #fee2e2; color: #ef4444;" onclick="deleteList()">Lijstje verwijderen</button>
                 
-                <div class="modal-actions" style="margin-top: 0;">
-                    <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
-                    <button class="btn-confirm" id="btn-confirm-edit-list" onclick="saveListEdit()">Opslaan</button>
+                <div style="display:flex; gap:15px; margin-bottom: 1.5rem;">
+                    <div class="form-group" style="flex:1; margin-bottom:0;">
+                        <label>Datum (Optioneel)</label>
+                        <input type="date" id="edit-list-date">
+                    </div>
+                    <div class="form-group" style="flex:1; margin-bottom:0;">
+                        <label>Waarvoor? (Optioneel)</label>
+                        <input type="text" id="edit-list-occasion" placeholder="Bijv. Bruiloft">
+                    </div>
                 </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="edit-show-afgestreept" style="width: 20px; height: 20px;">
+                        Zelf kunnen zien welke cadeaus al zijn afgestreept
+                    </label>
+                </div>
+                
+                <hr style="border:0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <button class="btn-cancel" style="background: #fee2e2; color: #ef4444;" onclick="deleteList()">Lijstje verwijderen</button>
+                    
+                    <div class="modal-actions" style="margin-top: 0;">
+                        <button class="btn-cancel" onclick="closeModals()">Annuleren</button>
+                        <button class="btn-confirm" id="btn-confirm-edit-list" onclick="saveListEdit()">Opslaan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-edit-admins" style="display:none;">
+                <p class="text-light" style="margin-bottom: 15px;">Zoek op naam om iemand uit te nodigen als mede-beheerder. Zij kunnen ook cadeaus toevoegen!</p>
+                <div class="form-group" style="display:flex; gap: 10px;">
+                    <input type="text" id="admin-search-input" placeholder="Zoek gebruiker..." style="flex:1;" onkeypress="if(event.key === 'Enter') searchUsers()">
+                    <button class="btn-confirm" id="btn-search-users" onclick="searchUsers()">Zoek</button>
+                </div>
+                <div id="admin-search-results" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+                
+                <h4 style="margin-bottom:10px; color:var(--text-main);">Huidige beheerders</h4>
+                <div id="current-admins-list" style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifications -->
+    <div id="modal-notifications" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Meldingen</h3>
+            <div id="notifications-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                <!-- JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModals()">Sluiten</button>
             </div>
         </div>
     </div>
@@ -279,6 +298,15 @@
                     <label class="file-upload-label">
                         <input type="file" id="modal-item-img" accept="image/*" onchange="updateFileName(this)">
                         <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
+                    </label>
+                </div>
+                <div class="form-group" style="background: var(--bg-grad-1); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0;">
+                        <div>
+                            <span style="font-weight: 600; display: block; color: var(--text-main);">Mag cadeau afgestreept worden?</span>
+                            <small id="lock-status-text" class="text-light" style="font-weight: normal;">Ja, anderen mogen dit afstrepen.</small>
+                        </div>
+                        <input type="checkbox" id="modal-item-lock" style="width: 24px; height: 24px; accent-color: var(--primary);" onchange="document.getElementById('lock-status-text').innerText = this.checked ? 'Nee, afstrepen is geblokkeerd 🔒' : 'Ja, anderen mogen dit afstrepen.';">
                     </label>
                 </div>
                 <input type="hidden" id="modal-item-img-url">
@@ -337,7 +365,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.21.1/pocketbase.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.23.0/pocketbase.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="/js/app.js"></script>
     <script>

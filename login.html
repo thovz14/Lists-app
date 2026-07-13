@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inloggen | Wonder Lijstjes</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: var(--shadow-hover);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        
+        .auth-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .auth-panel {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), #fde047);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(234, 179, 8, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* OTP Input Styles */
+        .otp-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .otp-input {
+            width: 48px;
+            height: 56px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .text-link {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: inline-block;
+            margin-top: 1.5rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .text-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: var(--radius-sm);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .back-nav {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .back-nav:hover {
+            color: var(--primary);
+        }
+        
+        .verify-icon {
+            font-size: 4rem;
+            text-align: center;
+            display: block;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-nav"><span>←</span> Terug</a>
+
+    <div class="login-page">
+        <div class="auth-card">
+            
+            <div class="auth-header">
+                <span class="auth-logo">🎁</span>
+                <h1 class="auth-title">Wonder ID</h1>
+                <p class="auth-subtitle" id="auth-subtitle">Log in op je account</p>
+            </div>
+
+            <!-- Sign In Panel -->
+            <div class="auth-panel active" id="panel-signin">
+                <form id="signin-form">
+                    <div class="form-group">
+                        <label>E-mailadres</label>
+                        <input type="email" id="signin-email" placeholder="jouw@email.nl" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Wachtwoord</label>
+                        <input type="password" id="signin-password" placeholder="••••••••" required>
+                    </div>
+                    <div id="signin-error" class="error-message"></div>
+                    <button type="submit" class="btn-submit" id="btn-signin">Inloggen</button>
+                </form>
+            </div>
+
+            <!-- OTP Panel -->
+            <div class="auth-panel" id="panel-otp">
+                <p style="text-align: center; color: var(--text-light); margin-bottom: 1rem;">
+                    Nieuw apparaat gedetecteerd. Vul de 6-cijferige code in die naar <strong id="otp-email-display" style="color: var(--text-main);"></strong> is gestuurd.
+                </p>
+                <form id="otp-form">
+                    <div class="otp-group" id="otp-inputs">
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
+                    </div>
+                    <div id="otp-error" class="error-message"></div>
+                    <button type="submit" class="btn-submit" id="btn-verify-otp">Verifiëren</button>
+                    <a class="text-link" onclick="switchPanel('signin')">Terug naar inloggen</a>
+                </form>
+            </div>
+
+            <!-- Verify Email Panel -->
+            <div class="auth-panel" id="panel-verify">
+                <span class="verify-icon">✉️</span>
+                <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+                    We hebben een verificatielink gestuurd naar <br><strong id="verify-email-display" style="color: var(--text-main);"></strong>. <br><br>Klik op de link in je e-mail om je account te activeren. Controleer ook je spamfolder!
+                </p>
+                <div id="verify-error" class="error-message"></div>
+                <button type="button" class="btn-submit" id="btn-resend-verify" style="background: var(--blue-btn); color: var(--text-main); box-shadow: none;">E-mail opnieuw sturen</button>
+                <a class="text-link" onclick="switchPanel('signin')">Terug naar inloggen</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.23.0/pocketbase.umd.js"></script>
+    <script>
+        const pb = new PocketBase('http://192.168.200.15:8090');
+        
+        const deviceKeyStorage = 'wonder-id-device-key-lijstje';
+        
+        let pendingOtpEmail = null;
+        let pendingOtpId = null;
+        let pendingVerifyEmail = null;
+
+        function deviceIsKnown() {
+            return Boolean(localStorage.getItem(deviceKeyStorage));
+        }
+
+        function markKnownDevice() {
+            if (!localStorage.getItem(deviceKeyStorage)) {
+                localStorage.setItem(deviceKeyStorage, crypto.randomUUID());
+            }
+        }
+
+        function switchPanel(panelId) {
+            document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+            
+            const titles = {
+                'signin': 'Log in op je account',
+                'otp': 'Apparaat verifiëren',
+                'verify': 'E-mailadres verifiëren'
+            };
+            document.getElementById('auth-subtitle').textContent = titles[panelId];
+            
+            // Hide errors on switch
+            document.querySelectorAll('.error-message').forEach(e => e.style.display = 'none');
+        }
+
+        function showError(panelId, message) {
+            const errDiv = document.getElementById(panelId + '-error');
+            if (errDiv) {
+                errDiv.textContent = message;
+                errDiv.style.display = 'block';
+            }
+        }
+
+        // OTP Input Auto-advance logic
+        const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                e.target.value = val;
+                if (val && otpInputs[index + 1]) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && otpInputs[index - 1]) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        function getOtpCode() {
+            return otpInputs.map(i => i.value.trim()).join('');
+        }
+
+        function clearOtp() {
+            otpInputs.forEach(i => i.value = '');
+            if (otpInputs[0]) otpInputs[0].focus();
+        }
+
+        function getRedirectUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('redirect') || '/';
+        }
+
+        // Handle Login
+        document.getElementById('signin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value.trim();
+            const password = document.getElementById('signin-password').value;
+            const btn = document.getElementById('btn-signin');
+            
+            document.getElementById('signin-error').style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Bezig...`;
+
+            try {
+                if (!deviceIsKnown()) {
+                    // Try to authenticate first to check if credentials are correct
+                    let authData;
+                    try {
+                        authData = await pb.collection('users').authWithPassword(email, password);
+                    } catch (credErr) {
+                        // Wrong password or account doesn't exist
+                        throw new Error("Incorrect email or password");
+                    }
+                    
+                    // Clear auth store because we need to verify device/email first
+                    pb.authStore.clear();
+
+                    // Check if verified
+                    if (!authData.record.verified) {
+                        pendingVerifyEmail = email;
+                        document.getElementById('verify-email-display').textContent = email;
+                        switchPanel('verify');
+                        btn.disabled = false;
+                        btn.innerHTML = `Inloggen`;
+                        return;
+                    }
+
+                    // Request OTP
+                    const otpResponse = await pb.collection('users').requestOTP(email);
+                    pendingOtpEmail = email;
+                    pendingOtpId = otpResponse?.id || otpResponse?.otpId || null;
+                    
+                    document.getElementById('otp-email-display').textContent = email;
+                    clearOtp();
+                    switchPanel('otp');
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = `Inloggen`;
+                    return;
+                }
+
+                // Known device flow
+                const authData = await pb.collection('users').authWithPassword(email, password);
+                
+                if (!authData.record.verified) {
+                    pb.authStore.clear();
+                    pendingVerifyEmail = email;
+                    document.getElementById('verify-email-display').textContent = email;
+                    switchPanel('verify');
+                    return;
+                }
+
+                markKnownDevice();
+                window.location.href = getRedirectUrl();
+
+            } catch (err) {
+                console.error(err);
+                if (err.message === "Incorrect email or password") {
+                    showError('signin', 'Incorrect email or password');
+                } else if (err?.data?.message?.includes('verified')) {
+                    pb.authStore.clear();
+                    pendingVerifyEmail = email;
+                    document.getElementById('verify-email-display').textContent = email;
+                    switchPanel('verify');
+                } else {
+                    showError('signin', 'Inloggen mislukt. Controleer je gegevens.');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Inloggen`;
+            }
+        });
+
+        // Handle OTP Verify
+        document.getElementById('otp-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = getOtpCode();
+            if (code.length !== 6) {
+                showError('otp', 'Vul de volledige 6-cijferige code in.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-verify-otp');
+            document.getElementById('otp-error').style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Bezig...`;
+
+            try {
+                if (!pendingOtpId) throw new Error("Geen OTP sessie gevonden");
+                
+                const authData = await pb.collection('users').authWithOTP(pendingOtpId, code);
+                markKnownDevice();
+                window.location.href = getRedirectUrl();
+            } catch (err) {
+                console.error(err);
+                showError('otp', 'Code onjuist of verlopen. Probeer het opnieuw.');
+                clearOtp();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Verifiëren`;
+            }
+        });
+
+        // Handle Resend Verification
+        document.getElementById('btn-resend-verify').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-resend-verify');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Bezig...`;
+            document.getElementById('verify-error').style.display = 'none';
+
+            try {
+                if (pendingVerifyEmail) {
+                    await pb.collection('users').requestVerification(pendingVerifyEmail);
+                    btn.innerHTML = `✅ E-mail succesvol verzonden!`;
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = origText;
+                    }, 3000);
+                }
+            } catch (err) {
+                console.error(err);
+                showError('verify', 'Kon e-mail niet verzenden. Probeer het later opnieuw.');
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        });
+        
+        // If already logged in, go to home or redirect
+        if (pb.authStore.isValid) {
+            window.location.href = getRedirectUrl();
+        }
+    </script>
+</body>
+</html>

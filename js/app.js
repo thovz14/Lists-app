@@ -65,22 +65,29 @@ function updateAuthUI() {
         
         const navMyLists = document.getElementById('nav-my-lists');
         if (navMyLists) navMyLists.style.display = 'flex';
+        
+        const navNotifs = document.getElementById('nav-notifications');
+        if (navNotifs) navNotifs.style.display = 'flex';
+        
+        fetchNotifications();
     } else {
         btnLogin.style.display = 'block';
         userDiv.style.display = 'none';
-        
         const navMyLists = document.getElementById('nav-my-lists');
         if (navMyLists) navMyLists.style.display = 'none';
+        const navNotifs = document.getElementById('nav-notifications');
+        if (navNotifs) navNotifs.style.display = 'none';
+        
+        // Zorg dat de inlogknop je na inloggen terugbrengt naar de huidige pagina
+        if (btnLogin) btnLogin.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
     }
 }
 
 function setupEventListeners() {
-    document.getElementById('btn-open-login').addEventListener('click', () => openModal('modal-login'));
     document.getElementById('btn-logout').addEventListener('click', () => {
         pb.authStore.clear();
         window.location.reload();
     });
-    document.getElementById('btn-confirm-login').addEventListener('click', loginWithWonderID);
 
     document.getElementById('username').addEventListener('keypress', e => { if (e.key === 'Enter') openCreateModal(); });
     document.getElementById('btn-open-create-modal').addEventListener('click', openCreateModal);
@@ -194,25 +201,10 @@ async function importFromUrl() {
     }
 }
 
-async function loginWithWonderID() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    try {
-        const btn = document.getElementById('btn-confirm-login');
-        btn.innerText = 'Bezig...';
-        await pb.collection('users').authWithPassword(email, password);
-        closeModals();
-        btn.innerText = 'Inloggen';
-    } catch (err) {
-        alert('Inloggen mislukt.');
-        document.getElementById('btn-confirm-login').innerText = 'Inloggen';
-    }
-}
-
 function openCreateModal() {
     if (!pb.authStore.isValid) {
         document.getElementById('login-warning').style.display = 'block';
-        openModal('modal-login');
+        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
         return;
     }
 
@@ -254,7 +246,7 @@ async function createNewList() {
 
 async function loadList(slug) {
     try {
-        const record = await pb.collection('lists').getFirstListItem(`slug="${slug}"`, { expand: 'owner' });
+        const record = await pb.collection('lists').getFirstListItem(`slug="${slug}"`, { expand: 'owner,co_admins' });
         currentListId = record.id;
         currentListSlug = record.slug;
         currentListOwnerId = record.owner;
@@ -287,7 +279,7 @@ function renderListProfile(record) {
     
     const picElement = document.getElementById('profile-pic-element');
     if (record.avatar) {
-        const fileUrl = pb.files.getUrl(record, record.avatar);
+        const fileUrl = pb.files.getURL(record, record.avatar);
         picElement.style.backgroundImage = `url('${fileUrl}')`;
         picElement.innerHTML = '';
     } else {
@@ -310,9 +302,15 @@ function renderListProfile(record) {
         eventDiv.style.display = 'none';
     }
     
-    if (pb.authStore.isValid && pb.authStore.model.id === currentListOwnerId) {
+    const isOwner = pb.authStore.isValid && pb.authStore.model.id === currentListOwnerId;
+    const isCoAdmin = pb.authStore.isValid && record.co_admins && record.co_admins.includes(pb.authStore.model.id);
+
+    if (isOwner || isCoAdmin) {
         document.getElementById('owner-add-section').style.display = 'flex';
         document.getElementById('owner-controls').style.display = 'flex';
+        
+        const adminTab = document.getElementById('tab-edit-admins');
+        if (adminTab) adminTab.style.display = isOwner ? 'block' : 'none';
     } else {
         document.getElementById('owner-add-section').style.display = 'none';
         document.getElementById('owner-controls').style.display = 'none';
@@ -502,6 +500,8 @@ async function loadGifts(listId) {
         currentGifts = gifts;
         const wrapper = document.getElementById('categories-wrapper');
         const isOwner = (pb.authStore.isValid && pb.authStore.model.id === currentListOwnerId);
+        const isCoAdmin = (pb.authStore.isValid && currentRecord.co_admins && currentRecord.co_admins.includes(pb.authStore.model.id));
+        const hasManageRights = isOwner || isCoAdmin;
         
         wrapper.innerHTML = '';
         
@@ -517,7 +517,7 @@ async function loadGifts(listId) {
                 
                 let imgSrcHtml = '🎁';
                 if (gift.image) {
-                    const fileUrl = pb.files.getUrl(gift, gift.image);
+                    const fileUrl = pb.files.getURL(gift, gift.image);
                     imgSrcHtml = `<img src="${fileUrl}" alt="cadeau">`;
                 } else if (gift.imageUrl) {
                     imgSrcHtml = `<img src="${gift.imageUrl}" alt="cadeau">`;
@@ -526,14 +526,16 @@ async function loadGifts(listId) {
                 let btnHtml = '';
                 let deleteBtnHtml = '';
                 
-                if (isOwner) {
+                if (hasManageRights) {
                     deleteBtnHtml = `
                         <button class="btn-cancel" onclick="openEditGiftModal('${gift.id}')" style="background:transparent; color:var(--text-main); padding: 5px; font-size: 1.2rem; border-radius: 50%; width: 40px; height: 40px; display:flex; justify-content:center; align-items:center;" title="Bewerken">✏️</button>
                         <button class="btn-cancel" onclick="deleteGift('${gift.id}')" style="background:transparent; color:var(--error-color); padding: 5px; font-size: 1.2rem; border-radius: 50%; width: 40px; height: 40px; display:flex; justify-content:center; align-items:center;" title="Verwijderen">🗑️</button>
                         <div class="drag-handle" style="cursor: grab; font-size: 1.5rem; color: var(--text-light); margin-left:10px;">⋮⋮</div>
                     `;
                     
-                    if (currentListShowAfgestreept) {
+                    if (gift.lock_afstrepen) {
+                        btnHtml = `<div style="padding:8px 16px; color:var(--text-light); font-weight:600; background: var(--bg-color); border-radius:100px;">🔒 Niet afstreepbaar</div>`;
+                    } else if (currentListShowAfgestreept) {
                         if (gift.afgestreept) {
                             btnHtml = `<div style="background:var(--bg-color); padding:8px 16px; border-radius:100px; font-weight:bold; color:var(--primary);">✅ Gekocht door iemand!</div>`;
                         } else {
@@ -543,7 +545,9 @@ async function loadGifts(listId) {
                         btnHtml = `<div style="padding:8px 16px; color:var(--text-light); font-weight:600;">🤫 Verborgen status</div>`;
                     }
                 } else {
-                    if (gift.afgestreept) {
+                    if (gift.lock_afstrepen) {
+                        btnHtml = `<div style="padding:8px 16px; color:var(--text-light); font-weight:600; background: var(--bg-color); border-radius:100px;">🔒 Niet afstreepbaar</div>`;
+                    } else if (gift.afgestreept) {
                         btnHtml = `<button class="btn-afstrepen afgestreept" onclick="toggleAfstrepen('${gift.id}', false)">✅ Gekocht (undo)</button>`;
                     } else {
                         btnHtml = `<button class="btn-afstrepen" onclick="toggleAfstrepen('${gift.id}', true)">☑ Afstrepen</button>`;
@@ -660,6 +664,9 @@ async function addItem() {
         formData.append('price', price);
         formData.append('category', document.getElementById('modal-item-category').value);
         
+        const lockAfstrepen = document.getElementById('modal-item-lock');
+        if (lockAfstrepen) formData.append('lock_afstrepen', lockAfstrepen.checked);
+        
         // Stuur de imageUrl mee als tekst, zodat we geen complexe blob-downloads nodig hebben.
         if (importedImgUrl && fileInput.files.length === 0) {
             formData.append('imageUrl', importedImgUrl);
@@ -677,6 +684,10 @@ async function addItem() {
         document.getElementById('modal-item-price').value = '';
         document.getElementById('modal-item-img-url').value = '';
         fileInput.value = '';
+        if (lockAfstrepen) {
+            lockAfstrepen.checked = false;
+            document.getElementById('lock-status-text').innerText = 'Ja, anderen mogen dit afstrepen.';
+        }
 
         closeModals();
         btn.innerText = 'Cadeau opslaan';
@@ -702,5 +713,188 @@ window.toggleMobileMenu = function() {
     } else {
         nav.classList.add('open');
         overlay.classList.add('open');
+    }
+}
+
+// --- Beheerders & Meldingen Logica ---
+
+window.switchEditListTab = function(tab) {
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-edit-' + tab).classList.add('active');
+    
+    document.getElementById('view-edit-general').style.display = tab === 'general' ? 'block' : 'none';
+    document.getElementById('view-edit-admins').style.display = tab === 'admins' ? 'block' : 'none';
+    
+    if (tab === 'admins') {
+        renderCurrentAdmins();
+    }
+}
+
+async function renderCurrentAdmins() {
+    const container = document.getElementById('current-admins-list');
+    container.innerHTML = '<span class="spinner"></span> Laden...';
+    try {
+        const record = await pb.collection('lists').getOne(currentListId, { expand: 'co_admins' });
+        if (!record.expand || !record.expand.co_admins) {
+            container.innerHTML = '<p class="text-light">Geen mede-beheerders nog.</p>';
+            return;
+        }
+        container.innerHTML = record.expand.co_admins.map(admin => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--input-bg); padding:10px; border-radius:var(--radius-sm);">
+                <div>
+                    <strong style="color:var(--text-main);">${admin.username || admin.name}</strong>
+                    <br><small class="text-light">${admin.email}</small>
+                </div>
+                <button class="btn-cancel" style="background:#fee2e2; color:#ef4444; padding:5px 10px; font-size:0.8rem;" onclick="removeAdmin('${admin.id}')">Verwijder</button>
+            </div>
+        `).join('');
+    } catch(err) {
+        container.innerHTML = '<p class="error-message" style="display:block;">Fout bij ophalen.</p>';
+    }
+}
+
+window.searchUsers = async function() {
+    const query = document.getElementById('admin-search-input').value.trim();
+    if (!query) return;
+    const container = document.getElementById('admin-search-results');
+    container.innerHTML = '<span class="spinner"></span> Zoeken...';
+    try {
+        const users = await pb.collection('users').getList(1, 5, {
+            filter: `username ~ "${query}" || email ~ "${query}"`
+        });
+        
+        if (users.items.length === 0) {
+            container.innerHTML = '<p class="text-light">Geen gebruikers gevonden.</p>';
+            return;
+        }
+        
+        container.innerHTML = users.items.filter(u => u.id !== pb.authStore.model.id).map(user => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--input-bg); padding:10px; border-radius:var(--radius-sm);">
+                <div>
+                    <strong style="color:var(--text-main);">${user.username || user.name}</strong>
+                    <br><small class="text-light">${user.email}</small>
+                </div>
+                <button class="btn-cancel" style="background:var(--bg-grad-1); color:var(--primary); padding:5px 10px; font-size:0.8rem;" onclick="inviteUser('${user.id}')">Uitnodigen</button>
+            </div>
+        `).join('');
+    } catch(err) {
+        console.error(err);
+        container.innerHTML = '<p class="error-message" style="display:block;">Fout bij zoeken. Heb je rechten ingesteld?</p>';
+    }
+}
+
+window.inviteUser = async function(userId) {
+    try {
+        await pb.collection('list_invites').create({
+            list: currentListId,
+            from_user: pb.authStore.model.id,
+            to_user: userId,
+            status: 'pending'
+        });
+        alert('Uitnodiging verstuurd!');
+        document.getElementById('admin-search-results').innerHTML = '';
+        document.getElementById('admin-search-input').value = '';
+    } catch (err) {
+        console.error(err);
+        alert('Fout bij uitnodigen. Misschien is deze persoon al uitgenodigd?');
+    }
+}
+
+window.removeAdmin = async function(userId) {
+    if (!confirm('Weet je zeker dat je deze beheerder wilt verwijderen?')) return;
+    try {
+        const record = await pb.collection('lists').getOne(currentListId);
+        const updatedAdmins = (record.co_admins || []).filter(id => id !== userId);
+        await pb.collection('lists').update(currentListId, { co_admins: updatedAdmins });
+        renderCurrentAdmins();
+    } catch(err) {
+        console.error(err);
+        alert('Fout bij verwijderen.');
+    }
+}
+
+window.fetchNotifications = async function() {
+    if (!pb.authStore.isValid) return;
+    try {
+        const invites = await pb.collection('list_invites').getFullList({
+            filter: `to_user = "${pb.authStore.model.id}" && status = "pending"`,
+            expand: 'list,from_user'
+        });
+        
+        const badge = document.getElementById('notif-badge');
+        if (invites.length > 0) {
+            badge.innerText = invites.length;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (err) {
+        console.error('Fetch notifs error:', err);
+    }
+}
+
+window.openNotificationsModal = async function() {
+    const container = document.getElementById('notifications-container');
+    container.innerHTML = '<span class="spinner"></span> Laden...';
+    openModal('modal-notifications');
+    
+    try {
+        const invites = await pb.collection('list_invites').getFullList({
+            filter: `to_user = "${pb.authStore.model.id}" && status = "pending"`,
+            expand: 'list,from_user'
+        });
+        
+        if (invites.length === 0) {
+            container.innerHTML = '<p class="text-light">Je hebt geen nieuwe meldingen.</p>';
+            return;
+        }
+        
+        container.innerHTML = invites.map(inv => {
+            const listName = inv.expand?.list?.slug || 'Een lijstje';
+            const listId = inv.expand?.list?.id || inv.list;
+            const fromName = inv.expand?.from_user?.username || 'Iemand';
+            return `
+            <div style="background:var(--input-bg); padding:15px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <p style="margin-bottom:10px; color:var(--text-main);"><strong>${fromName}</strong> heeft je uitgenodigd om mee te beheren aan het lijstje: <strong style="color:var(--primary);">${listName}</strong>.</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-confirm" style="flex:1; padding:8px;" onclick="acceptInvite('${inv.id}', '${listId}')">Accepteren</button>
+                    <button class="btn-cancel" style="flex:1; padding:8px; background:#fee2e2; color:#ef4444;" onclick="declineInvite('${inv.id}')">Weigeren</button>
+                </div>
+            </div>
+            `;
+        }).join('');
+    } catch (err) {
+        container.innerHTML = '<p class="error-message" style="display:block;">Kon meldingen niet laden.</p>';
+    }
+}
+
+window.acceptInvite = async function(inviteId, listId) {
+    try {
+        const listRecord = await pb.collection('lists').getOne(listId);
+        const admins = listRecord.co_admins || [];
+        if (!admins.includes(pb.authStore.model.id)) {
+            admins.push(pb.authStore.model.id);
+            await pb.collection('lists').update(listId, { co_admins: admins });
+        }
+        
+        await pb.collection('list_invites').update(inviteId, { status: 'accepted' });
+        
+        alert('Uitnodiging geaccepteerd! Je kan dit lijstje nu ook beheren.');
+        openNotificationsModal();
+        fetchNotifications();
+    } catch (err) {
+        console.error(err);
+        alert('Fout bij accepteren.');
+    }
+}
+
+window.declineInvite = async function(inviteId) {
+    try {
+        await pb.collection('list_invites').update(inviteId, { status: 'declined' });
+        openNotificationsModal();
+        fetchNotifications();
+    } catch (err) {
+        console.error(err);
+        alert('Fout bij weigeren.');
     }
 }
