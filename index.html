@@ -11,37 +11,37 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header class="header">
-        <a href="/" class="header-logo">
+    <header class="header" style="justify-content: center; position: relative; padding: 0;">
+        <!-- Hamburger Button -->
+        <button class="hamburger-btn" onclick="toggleMobileMenu()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); margin: 0; z-index: 10;">☰</button>
+        
+        <a href="/" class="header-logo" style="margin: 0;">
             <span style="-webkit-text-fill-color: initial; background: none;">🎁</span> Wonder Lijstjes
         </a>
-        
-        <!-- Hamburger Button -->
-        <button class="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
 
         <div id="mobile-overlay" onclick="toggleMobileMenu()"></div>
 
-        <!-- Navigatie & Auth Container -->
+        <!-- Mobile Menu Container -->
         <div class="desktop-nav" id="desktop-nav">
             <button class="close-menu-btn" onclick="toggleMobileMenu()">&times;</button>
-            <div class="header-nav">
-                <a href="/" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                    <span>✨</span> Nieuw lijstje
+            <div class="header-nav" style="flex-direction: column; align-items: stretch; gap: 0;">
+                <a href="/" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-size: 1.4rem;">✨</span> Nieuw lijstje
                 </a>
-                <a href="#" id="nav-my-lists" onclick="openMyListsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 6px;">
-                    <span>📋</span> Mijn Lijstjes
+                <a href="#" id="nav-my-lists" onclick="openMyListsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-size: 1.4rem;">📋</span> Mijn Lijstjes
                 </a>
-                <a href="#" id="nav-notifications" onclick="openNotificationsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 6px; position: relative;">
-                    <span>🔔</span> Meldingen
-                    <span id="notif-badge" style="display:none; position:absolute; top:-5px; right:-10px; background:var(--error-color); color:white; border-radius:50%; font-size:0.7rem; padding:2px 6px;">0</span>
+                <a href="#" id="nav-notifications" onclick="openNotificationsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color); position: relative;">
+                    <span style="font-size: 1.4rem;">🔔</span> Meldingen
+                    <span id="notif-badge" style="display:none; position:absolute; left: 35px; top: 10px; background:var(--error-color); color:white; border-radius:50%; font-size:0.7rem; padding:2px 6px;">0</span>
                 </a>
             </div>
 
-            <div class="header-right" id="auth-section">
-                <a href="/login.html" class="login-btn" id="btn-open-login" style="text-decoration:none; display:inline-block;">Log in met Wonder ID</a>
-                <div id="logged-in-user" style="display: none; align-items: center; gap: 15px;">
-                    <span id="user-email" class="font-semibold"></span>
-                    <button class="btn-cancel" id="btn-logout" style="padding: 8px 16px;">Uitloggen</button>
+            <div class="header-right" id="auth-section" style="margin-top: auto; width: 100%; padding: 20px 0;">
+                <a href="/login.html" class="login-btn" id="btn-open-login" style="text-decoration:none; display:block; text-align:center; width:100%;">Log in met Wonder ID</a>
+                <div id="logged-in-user" style="display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%;">
+                    <span id="user-email" class="font-semibold text-center" style="word-break: break-all;"></span>
+                    <button class="btn-cancel" id="btn-logout" style="padding: 12px; width: 100%; justify-content: center;">Uitloggen</button>
                 </div>
             </div>
         </div>
@@ -103,10 +103,10 @@
                             <div id="profile-event-info"></div>
                             
                             <!-- Knoppen voor de beheerder -->
-                            <div id="owner-controls" style="display: none; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 6px 14px; font-size: 0.9rem;">🔗 Delen</button>
-                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 6px 14px; font-size: 0.9rem;">+ Categorie</button>
-                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 6px 14px; font-size: 0.9rem; background: var(--blue-btn); color: var(--primary);">⚙️ Instellingen</button>
+                            <div id="owner-controls" style="display: none; align-items: center; justify-content: space-around; gap: 10px; margin-top: 20px; flex-wrap: nowrap; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px; border-right: 1px solid var(--border-color); border-radius: 0;">🔗</button>
+                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px; border-right: 1px solid var(--border-color); border-radius: 0;">➕</button>
+                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px;">⚙️</button>
                             </div>
                         </div>
                     </div>
@@ -131,6 +131,27 @@
             <a href="/" class="login-btn" style="text-decoration:none; display:inline-block;">Terug naar home</a>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar for Phone -->
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-item active">
+            <div class="icon icon-svg icon-home"></div>
+            <span class="label">Home</span>
+        </a>
+        <a href="#" onclick="openMyListsModal()" class="bottom-nav-item" id="nav-my-lists-bottom">
+            <div class="icon icon-svg icon-lists"></div>
+            <span class="label">Lijstjes</span>
+        </a>
+        <a href="#" onclick="openNotificationsModal()" class="bottom-nav-item" id="nav-notifications-bottom" style="position: relative;">
+            <div class="icon icon-svg icon-bell"></div>
+            <span class="label">Meldingen</span>
+            <span id="notif-badge-bottom" style="display:none; position:absolute; top:2px; right:20px; background:var(--error-color); color:white; border-radius:50%; font-size:0.6rem; padding:1px 5px;">0</span>
+        </a>
+        <a href="/login.html" class="bottom-nav-item">
+            <div class="icon icon-svg icon-account"></div>
+            <span class="label">Account</span>
+        </a>
+    </nav>
 
     <!-- Modal Create List -->
     <div id="modal-create-list" class="modal-overlay">

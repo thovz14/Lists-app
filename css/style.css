@@ -81,17 +81,14 @@ body {
 .font-bold { font-weight: 700; }
 .font-semibold { font-weight: 600; }
 
-/* Header */
 .header {
-    background: var(--header-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: transparent;
     height: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 5%;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
     position: sticky;
     top: 0;
     z-index: 50;
@@ -809,6 +806,7 @@ body {
         padding: 80px 20px 20px 20px;
         transition: right 0.3s ease;
         z-index: 1000;
+        overflow-y: auto;
     }
     .desktop-nav.open {
         right: 0;
@@ -845,3 +843,61 @@ body {
         align-items: flex-start !important;
     }
 }
+
+/* Bottom Navigation Bar */
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 500px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.75rem;
+    gap: 4px;
+}
+
+.bottom-nav-item.active, .bottom-nav-item:hover {
+    color: var(--primary);
+}
+
+.bottom-nav-item .icon {
+    font-size: 1.4rem;
+}
+
+body {
+    padding-bottom: 70px;
+}
+
+/* SVG Icons for Bottom Nav using CSS Masks to inherit colors */
+.icon-svg {
+    width: 24px;
+    height: 24px;
+    background-color: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+.icon-home { -webkit-mask-image: url('../SVG/home-6-svgrepo-com.svg'); mask-image: url('../SVG/home-6-svgrepo-com.svg'); }
+.icon-lists { -webkit-mask-image: url('../SVG/list-svgrepo-com.svg'); mask-image: url('../SVG/list-svgrepo-com.svg'); }
+.icon-bell { -webkit-mask-image: url('../SVG/bell-alt-svgrepo-com.svg'); mask-image: url('../SVG/bell-alt-svgrepo-com.svg'); }
+.icon-account { -webkit-mask-image: url('../SVG/account-avatar-person-svgrepo-com.svg'); mask-image: url('../SVG/account-avatar-person-svgrepo-com.svg'); }
