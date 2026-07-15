@@ -1,9 +1,9 @@
-const CACHE_NAME = 'lijstje-cache-v14';
+const CACHE_NAME = 'lijstje-cache-v15';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/app.js',
+  '/assets/styles/style.css',
+  '/assets/scripts/app.js',
   '/manifest.json'
 ];
 
