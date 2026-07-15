@@ -28,14 +28,20 @@ async function init() {
         showView('loader-view');
         await loadList(slug);
     } else {
-        showView('homepage-view');
+        if (pb.authStore.isValid) {
+            showView('loader-view');
+            await loadMyListsPage();
+        } else {
+            showView('homepage-view');
+        }
     }
 }
 
 function showView(viewId) {
-    const views = ['loader-view', 'homepage-view', 'list-view', 'error-view'];
+    const views = ['loader-view', 'homepage-view', 'list-view', 'error-view', 'my-lists-page-view', 'shops-page-view', 'settings-page-view'];
     views.forEach(id => {
-        document.getElementById(id).style.display = (id === viewId) ? 'block' : 'none';
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === viewId) ? 'block' : 'none';
     });
 }
 
@@ -50,6 +56,26 @@ function openModal(id) {
     const modal = document.getElementById(id);
     modal.style.display = 'flex';
     setTimeout(() => { modal.classList.add('show'); }, 10);
+}
+
+window.customConfirm = function(message) {
+    return new Promise((resolve) => {
+        document.getElementById('modal-confirm-message').innerText = message;
+        window.confirmCallback = function(result) {
+            resolve(result);
+        };
+        openModal('modal-confirm');
+    });
+}
+
+function formatDateNL(isoString) {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    if (isNaN(d)) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear());
+    return `${day}/${month}/${year}`;
 }
 
 function updateAuthUI() {
@@ -105,7 +131,7 @@ function setupEventListeners() {
     document.getElementById('btn-confirm-add-item').addEventListener('click', addItem);
 }
 
-// Haal eigen lijstjes op en open de modal
+// Haal eigen lijstjes op en open de modal (of als fallback)
 window.openMyListsModal = async function() {
     if (!pb.authStore.isValid) return;
     try {
@@ -129,6 +155,64 @@ window.openMyListsModal = async function() {
     }
 }
 
+async function loadMyListsPage() {
+    try {
+        const lists = await pb.collection('lists').getFullList({ filter: `owner = "${pb.authStore.model.id}"`, sort: '-created' });
+        const container = document.getElementById('my-lists-page-container');
+        
+        if (lists.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; border: 2px dashed var(--border-color); border-radius: var(--radius-lg);"><p class="text-light" style="font-size: 1.1rem; margin-bottom: 20px;">Je hebt nog geen lijstjes gemaakt.</p><button class="btn-primary" onclick="openCreateModal()" style="padding: 12px 24px; font-size: 1rem; border-radius: 100px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer;">Start mijn eerste lijstje</button></div>';
+        } else {
+            container.innerHTML = lists.map(l => `
+                <a href="/${l.slug}" style="display: flex; flex-direction: column; padding: 25px; border: 1px solid var(--border-color); border-radius: var(--radius-lg); text-decoration: none; color: var(--text-main); font-weight: 600; background: var(--card-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">${l.avatar ? `<img src="${pb.files.getURL(l, l.avatar)}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">` : '🎁'}</div>
+                    <span style="font-size: 1.25rem;">${l.slug}</span>
+                    <span class="text-light" style="font-size: 0.9rem; font-weight: 400; margin-top: 5px;">${l.occasion ? l.occasion : 'Lijstje'} • ${l.date ? formatDateNL(l.date) : 'Geen datum ingesteld'}</span>
+                    <span class="text-primary" style="margin-top: 15px; font-size: 0.95rem;">Naar lijstje ➔</span>
+                </a>
+            `).join('');
+        }
+        showView('my-lists-page-view');
+    } catch(err) {
+        console.error(err);
+        alert('Kon lijstjes niet ophalen.');
+        showView('homepage-view');
+    }
+}
+
+window.showShopsPage = function() {
+    showView('shops-page-view');
+}
+
+window.openAccountPage = function() {
+    if (pb.authStore.isValid) {
+        const user = pb.authStore.model;
+        document.getElementById('settings-user-email').innerText = user.email;
+        document.getElementById('settings-user-name').innerText = user.username || user.name || 'Gebruiker';
+        
+        if (user.profilePicSelection) {
+            if (user.profilePicSelection.startsWith('data:image/')) {
+                document.getElementById('settings-user-avatar').innerHTML = `<img src="${user.profilePicSelection}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                document.getElementById('settings-user-avatar').innerHTML = user.profilePicSelection;
+            }
+        } else if (user.avatar) {
+            document.getElementById('settings-user-avatar').innerHTML = `<img src="${pb.files.getURL(user, user.avatar)}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            document.getElementById('settings-user-avatar').innerHTML = '👤';
+        }
+        
+        showView('settings-page-view');
+    } else {
+        window.location.href = '/login.html';
+    }
+}
+
+window.logout = function() {
+    pb.authStore.clear();
+    window.location.href = '/';
+}
+
 window.switchAddTab = function(tab) {
     document.getElementById('tab-search').classList.remove('active');
     document.getElementById('tab-manual').classList.remove('active');
@@ -144,14 +228,50 @@ window.switchAddTab = function(tab) {
     }
 }
 
+window.croppedImageBlob = null;
 window.updateFileName = function(input) {
     const span = input.nextElementSibling;
     if (input.files && input.files.length > 0) {
-        span.innerHTML = `✅ ${input.files[0].name}`;
-        span.style.color = 'var(--primary)';
+        if (input.id === 'modal-profile-pic' || input.id === 'edit-profile-pic') {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('crop-image').src = e.target.result;
+                openModal('modal-crop');
+                if (window.cropper) window.cropper.destroy();
+                window.cropper = new Cropper(document.getElementById('crop-image'), {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    background: false
+                });
+            };
+            reader.readAsDataURL(file);
+            
+            document.getElementById('btn-crop-confirm').onclick = function() {
+                if (window.cropper) {
+                    window.cropper.getCroppedCanvas({
+                        width: 400,
+                        height: 400
+                    }).toBlob(function(blob) {
+                        window.croppedImageBlob = blob;
+                        span.innerHTML = `✅ Foto is bijgesneden!`;
+                        span.style.color = 'var(--primary)';
+                        document.getElementById('modal-crop').style.display = 'none';
+                        window.cropper.destroy();
+                        window.cropper = null;
+                    }, 'image/jpeg', 0.9);
+                }
+            };
+        } else {
+            span.innerHTML = `✅ ${input.files[0].name}`;
+            span.style.color = 'var(--primary)';
+            window.croppedImageBlob = null;
+        }
     } else {
         span.innerHTML = `📸 Klik hier om een foto te kiezen`;
         span.style.color = '';
+        window.croppedImageBlob = null;
     }
 }
 
@@ -208,17 +328,29 @@ function openCreateModal() {
         return;
     }
 
-    const slugInput = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, ''); 
-    if (!slugInput) return alert('Vul eerst een naam in!');
+    const usernameEl = document.getElementById('username');
+    if (usernameEl && usernameEl.value.trim() !== '') {
+        const slug = usernameEl.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+        document.getElementById('modal-list-name-input').value = slug;
+        document.getElementById('modal-list-url-preview').innerText = 'Jouw link: wonderdev.nl/' + slug;
+    } else {
+        document.getElementById('modal-list-name-input').value = '';
+        document.getElementById('modal-list-url-preview').innerText = 'Jouw link: wonderdev.nl/';
+    }
     
-    newListSlugTemp = slugInput;
-    document.getElementById('modal-list-name').value = "wonderdev.nl/" + newListSlugTemp;
+    document.getElementById('modal-list-date').value = '';
+    document.getElementById('modal-list-occasion').value = '';
     
     openModal('modal-create-list');
 }
 
 async function createNewList() {
     const fileInput = document.getElementById('modal-profile-pic');
+    const slugInput = document.getElementById('modal-list-name-input').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    
+    if (!slugInput) return alert('Kies eerst een naam voor je lijstje!');
+    newListSlugTemp = slugInput;
+    
     try {
         const btn = document.getElementById('btn-confirm-create');
         btn.innerText = 'Lanceren...';
@@ -231,7 +363,9 @@ async function createNewList() {
         formData.append('occasion', document.getElementById('modal-list-occasion').value);
         formData.append('categories', JSON.stringify(["Lijstje"]));
         
-        if (fileInput.files.length > 0) {
+        if (window.croppedImageBlob && fileInput.files.length > 0) {
+            formData.append('avatar', window.croppedImageBlob, fileInput.files[0].name);
+        } else if (fileInput.files.length > 0) {
             formData.append('avatar', fileInput.files[0]);
         }
 
@@ -292,7 +426,7 @@ function renderListProfile(record) {
     }
     
     // Datum & Gelegenheid weergeven
-    const listDate = record.date ? new Date(record.date).toLocaleDateString('nl-NL') : '';
+    const listDate = record.date ? formatDateNL(record.date) : '';
     const listOccasion = record.occasion || '';
     const eventDiv = document.getElementById('profile-event-info');
     if (listDate || listOccasion) {
@@ -317,9 +451,15 @@ function renderListProfile(record) {
     }
 }
 
-window.copyListLink = function() {
+window.copyListLink = function(btn) {
     navigator.clipboard.writeText(window.location.href);
-    alert("Link gekopieerd!");
+    if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<svg class="animated-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+        setTimeout(() => btn.innerHTML = originalText, 2000);
+    } else {
+        alert("Link gekopieerd!");
+    }
 }
 
 window.openEditListModal = function() {
@@ -350,7 +490,9 @@ window.saveListEdit = async function() {
         formData.append('date', date);
         formData.append('occasion', occasion);
         
-        if (fileInput.files.length > 0) {
+        if (window.croppedImageBlob && fileInput.files.length > 0) {
+            formData.append('avatar', window.croppedImageBlob, fileInput.files[0].name);
+        } else if (fileInput.files.length > 0) {
             formData.append('avatar', fileInput.files[0]);
         }
 
@@ -369,7 +511,7 @@ window.saveListEdit = async function() {
 }
 
 window.deleteList = async function() {
-    if (!confirm("Weet je zeker dat je dit lijstje wilt verwijderen? Dit verwijdert ook ALLE cadeaus op dit lijstje. Dit kan niet ongedaan worden gemaakt!")) return;
+    if (!(await customConfirm("Weet je zeker dat je dit lijstje wilt verwijderen? Dit verwijdert ook ALLE cadeaus op dit lijstje. Dit kan niet ongedaan worden gemaakt!"))) return;
     try {
         // Eerst alle cadeaus ophalen en verwijderen
         const giftsToDelete = await pb.collection('gifts').getFullList({ filter: `listId = "${currentListId}"` });
@@ -387,7 +529,7 @@ window.deleteList = async function() {
 }
 
 window.deleteGift = async function(giftId) {
-    if (!confirm("Weet je zeker dat je dit cadeau wilt verwijderen?")) return;
+    if (!(await customConfirm("Weet je zeker dat je dit cadeau wilt verwijderen?"))) return;
     try {
         await pb.collection('gifts').delete(giftId);
         await loadGifts(currentListId);
@@ -452,28 +594,47 @@ window.saveGiftEdit = async function() {
     }
 }
 
-window.addNewCategory = async function() {
-    const catName = prompt("Hoe moet de nieuwe categorie heten?");
-    if (!catName || catName.trim() === "") return;
+window.addNewCategory = function() {
+    document.getElementById('modal-category-name').value = '';
+    openModal('modal-add-category');
+}
+
+window.confirmAddCategory = async function() {
+    const catName = document.getElementById('modal-category-name').value.trim();
+    if (!catName || catName === "") {
+        alert("Vul een naam in");
+        return;
+    }
     
-    if (!currentCategories.includes(catName.trim())) {
-        currentCategories.push(catName.trim());
+    const btn = document.getElementById('btn-confirm-add-category');
+    btn.disabled = true;
+    btn.innerText = 'Bezig...';
+    
+    if (!currentCategories.includes(catName)) {
+        currentCategories.push(catName);
         try {
             await pb.collection('lists').update(currentListId, {
                 categories: currentCategories
             });
+            closeModals();
             await loadGifts(currentListId);
         } catch(err) {
+            console.error(err);
             alert("Kon categorie niet opslaan");
         }
+    } else {
+        alert("Categorie bestaat al!");
     }
+    
+    btn.disabled = false;
+    btn.innerText = 'Toevoegen';
 }
 
 window.deleteCategory = async function(catName) {
     if (currentCategories.length <= 1) {
         return alert("Je moet minimaal 1 categorie overhouden!");
     }
-    if (!confirm(`Weet je zeker dat je de categorie '${catName}' wilt verwijderen? Eventuele cadeaus worden verplaatst naar de eerste categorie.`)) return;
+    if (!(await customConfirm(`Weet je zeker dat je de categorie '${catName}' wilt verwijderen? Eventuele cadeaus worden verplaatst naar de eerste categorie.`))) return;
 
     currentCategories = currentCategories.filter(c => c !== catName);
     const fallbackCat = currentCategories[0];
@@ -801,7 +962,7 @@ window.inviteUser = async function(userId) {
 }
 
 window.removeAdmin = async function(userId) {
-    if (!confirm('Weet je zeker dat je deze beheerder wilt verwijderen?')) return;
+    if (!(await customConfirm('Weet je zeker dat je deze beheerder wilt verwijderen?'))) return;
     try {
         const record = await pb.collection('lists').getOne(currentListId);
         const updatedAdmins = (record.co_admins || []).filter(id => id !== userId);

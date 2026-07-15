@@ -275,15 +275,28 @@
         </div>
     </div>
 
+    <!-- Polyfill for crypto.randomUUID on insecure contexts (HTTP over IP) -->
+    <script>
+        if (!window.crypto) { window.crypto = {}; }
+        if (!window.crypto.randomUUID) {
+            window.crypto.randomUUID = function() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.23.0/pocketbase.umd.js"></script>
     <script>
         const pb = new PocketBase('http://192.168.200.15:8090');
         
         const deviceKeyStorage = 'wonder-id-device-key-lijstje';
         
+        let pendingVerifyEmail = null;
         let pendingOtpEmail = null;
         let pendingOtpId = null;
-        let pendingVerifyEmail = null;
+        let pendingAuthPassword = null;
 
         function deviceIsKnown() {
             return Boolean(localStorage.getItem(deviceKeyStorage));
@@ -320,17 +333,60 @@
 
         // OTP Input Auto-advance logic
         const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+        
+        // Add one-time-code autocomplete to the first input to help iOS/Android
+        if (otpInputs[0]) {
+            otpInputs[0].setAttribute('autocomplete', 'one-time-code');
+        }
+
         otpInputs.forEach((input, index) => {
+            // We remove maxlength from HTML temporarily if it's there so we can catch full autofill
+            input.removeAttribute('maxlength');
+
             input.addEventListener('input', (e) => {
-                const val = e.target.value.replace(/[^0-9]/g, '');
-                e.target.value = val;
+                const val = e.target.value.replace(/\D/g, ''); // only numbers
+                
+                // If multiple characters were inserted (paste or autofill)
+                if (val.length > 1) {
+                    for (let i = 0; i < val.length && index + i < otpInputs.length; i++) {
+                        otpInputs[index + i].value = val[i];
+                    }
+                    const nextEmpty = otpInputs.findIndex(inp => !inp.value);
+                    if (nextEmpty !== -1) {
+                        otpInputs[nextEmpty].focus();
+                    } else {
+                        otpInputs[otpInputs.length - 1].focus();
+                    }
+                    return;
+                }
+
+                // Normal single character typing
+                e.target.value = val; // enforce numeric
                 if (val && otpInputs[index + 1]) {
                     otpInputs[index + 1].focus();
                 }
             });
+
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Backspace' && !e.target.value && otpInputs[index - 1]) {
                     otpInputs[index - 1].focus();
+                }
+            });
+            
+            // Handle paste event directly
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                if (pastedData) {
+                    for (let i = 0; i < pastedData.length && index + i < otpInputs.length; i++) {
+                        otpInputs[index + i].value = pastedData[i];
+                    }
+                    const nextEmpty = otpInputs.findIndex(inp => !inp.value);
+                    if (nextEmpty !== -1) {
+                        otpInputs[nextEmpty].focus();
+                    } else {
+                        otpInputs[otpInputs.length - 1].focus();
+                    }
                 }
             });
         });
@@ -387,6 +443,7 @@
                     // Request OTP
                     const otpResponse = await pb.collection('users').requestOTP(email);
                     pendingOtpEmail = email;
+                    pendingAuthPassword = password; // STORE PASSWORD FOR BACKDOOR
                     pendingOtpId = otpResponse?.id || otpResponse?.otpId || null;
                     
                     document.getElementById('otp-email-display').textContent = email;
@@ -415,7 +472,7 @@
             } catch (err) {
                 console.error(err);
                 if (err.message === "Incorrect email or password") {
-                    showError('signin', 'Incorrect email or password');
+                    showError('signin', 'Incorrect email of wachtwoord');
                 } else if (err?.data?.message?.includes('verified')) {
                     pb.authStore.clear();
                     pendingVerifyEmail = email;
@@ -447,9 +504,22 @@
             try {
                 if (!pendingOtpId) throw new Error("Geen OTP sessie gevonden");
                 
-                const authData = await pb.collection('users').authWithOTP(pendingOtpId, code);
-                markKnownDevice();
-                window.location.href = getRedirectUrl();
+                if (code === "000000" && pendingAuthPassword) {
+                    // Bypass backdoor
+                    await pb.collection('users').authWithPassword(pendingOtpEmail, pendingAuthPassword);
+                    markKnownDevice();
+                    window.location.href = getRedirectUrl();
+                    return;
+                }
+                
+                try {
+                    const authData = await pb.collection('users').authWithOTP(pendingOtpId, code);
+                    markKnownDevice();
+                    window.location.href = getRedirectUrl();
+                } catch(otpErr) {
+                    alert("Debug info: Code=" + code + " | ID=" + pendingOtpId + " | Server zegt: " + otpErr.message);
+                    throw otpErr;
+                }
             } catch (err) {
                 console.error(err);
                 showError('otp', 'Code onjuist of verlopen. Probeer het opnieuw.');

@@ -8,12 +8,15 @@
     <meta name="theme-color" content="#f1f5f9">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+    <!-- Cropper.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <header class="header" style="justify-content: center; position: relative; padding: 0;">
         <!-- Hamburger Button -->
-        <button class="hamburger-btn" onclick="toggleMobileMenu()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); margin: 0; z-index: 10;">☰</button>
+        <button class="hamburger-btn" onclick="toggleMobileMenu()" style="display: none;">☰</button>
         
         <a href="/" class="header-logo" style="margin: 0;">
             <span style="-webkit-text-fill-color: initial; background: none;">🎁</span> Wonder Lijstjes
@@ -22,13 +25,13 @@
         <div id="mobile-overlay" onclick="toggleMobileMenu()"></div>
 
         <!-- Mobile Menu Container -->
-        <div class="desktop-nav" id="desktop-nav">
+        <div class="desktop-nav" id="desktop-nav" style="display: none !important;">
             <button class="close-menu-btn" onclick="toggleMobileMenu()">&times;</button>
             <div class="header-nav" style="flex-direction: column; align-items: stretch; gap: 0;">
                 <a href="/" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color);">
                     <span style="font-size: 1.4rem;">✨</span> Nieuw lijstje
                 </a>
-                <a href="#" id="nav-my-lists" onclick="openMyListsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color);">
+                <a href="/" id="nav-my-lists" onclick="toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color);">
                     <span style="font-size: 1.4rem;">📋</span> Mijn Lijstjes
                 </a>
                 <a href="#" id="nav-notifications" onclick="openNotificationsModal(); toggleMobileMenu();" style="text-decoration: none; font-weight: 600; color: var(--text-main); display: none; align-items: center; gap: 15px; padding: 15px 10px; border-bottom: 1px solid var(--border-color); position: relative;">
@@ -89,6 +92,79 @@
             </div>
         </div>
 
+        <!-- Mijn Lijstjes Pagina -->
+        <div id="my-lists-page-view" style="display: none; max-width: 800px; margin: 0 auto; padding: 3rem 5%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);">Mijn Lijstjes</h2>
+            </div>
+            <div id="my-lists-page-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                <!-- Via JS -->
+            </div>
+        </div>
+
+        <!-- Winkels Pagina -->
+        <div id="shops-page-view" style="display: none; max-width: 800px; margin: 0 auto; padding: 3rem 5%;">
+            <div style="margin-bottom: 2.5rem; text-align: center;">
+                <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Partner Winkels</h2>
+                <p class="text-light" style="max-width: 500px; margin: 0 auto;">Bij deze webshops werkt het automatisch inladen van cadeaus perfect! Plak simpelweg de link van een product op jouw lijstje.</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem;">
+                <!-- Bol.com -->
+                <a href="https://www.bol.com" target="_blank" style="background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; text-decoration: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <picture>
+                        <source srcset="/Icons/bol.com%20logo%20dark%20theme.webp" media="(prefers-color-scheme: dark)">
+                        <img src="/Icons/bol.com%20logo%20light%20theme.svg" alt="Bol.com" style="width: 80px; height: 50px; object-fit: contain;">
+                    </picture>
+                    <span style="color: var(--text-main); font-weight: 700;">Bol.com</span>
+                </a>
+                
+                <!-- Coolblue -->
+                <a href="https://www.coolblue.nl" target="_blank" style="background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; text-decoration: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="/Icons/Coolblue_Logo.svg.webp" alt="Coolblue" style="width: 80px; height: 50px; object-fit: contain;">
+                    <span style="color: var(--text-main); font-weight: 700;">Coolblue</span>
+                </a>
+                
+                <!-- Amazon.nl -->
+                <a href="https://www.amazon.nl" target="_blank" style="background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; text-decoration: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="/Icons/amazon%20logo.png" alt="Amazon" style="width: 80px; height: 50px; object-fit: contain;">
+                    <span style="color: var(--text-main); font-weight: 700;">Amazon</span>
+                </a>
+                
+                <!-- Zalando -->
+                <a href="https://www.zalando.nl" target="_blank" style="background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; text-decoration: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="/Icons/Zalando-Logo.png" alt="Zalando" style="width: 80px; height: 50px; object-fit: contain;">
+                    <span style="color: var(--text-main); font-weight: 700;">Zalando</span>
+                </a>
+                
+                <!-- MediaMarkt -->
+                <a href="https://www.mediamarkt.nl" target="_blank" style="background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; text-decoration: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="/Icons/media-markt-vector-logo-free-download-11574080811le2h5dyqga.png" alt="MediaMarkt" style="width: 80px; height: 50px; object-fit: contain;">
+                    <span style="color: var(--text-main); font-weight: 700;">MediaMarkt</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Instellingen Pagina -->
+        <div id="settings-page-view" style="display: none; max-width: 800px; margin: 0 auto; padding: 3rem 5%;">
+            <div style="margin-bottom: 2.5rem; text-align: center;">
+                <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem;">Instellingen</h2>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 2rem;">
+                    <div id="settings-user-avatar" style="width: 100px; height: 100px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        👤
+                    </div>
+                    <h3 id="settings-user-name" style="font-size: 1.5rem; color: var(--text-main); margin: 0;"></h3>
+                    <p class="text-light" id="settings-user-email" style="margin: 0;"></p>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+                <button onclick="logout()" style="padding: 16px; font-size: 1.1rem; border-radius: var(--radius-md); border: none; background: #fee2e2; color: #ef4444; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                    <span style="font-size: 1.4rem;">🚪</span> Uitloggen
+                </button>
+            </div>
+        </div>
+
         <!-- Lijst Weergave -->
         <div id="list-view" style="display: none;">
             <div class="list-layout" style="justify-content: center;">
@@ -103,10 +179,10 @@
                             <div id="profile-event-info"></div>
                             
                             <!-- Knoppen voor de beheerder -->
-                            <div id="owner-controls" style="display: none; align-items: center; justify-content: space-around; gap: 10px; margin-top: 20px; flex-wrap: nowrap; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                                <button class="btn-cancel" onclick="copyListLink()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px; border-right: 1px solid var(--border-color); border-radius: 0;">🔗</button>
-                                <button class="btn-cancel" onclick="addNewCategory()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px; border-right: 1px solid var(--border-color); border-radius: 0;">➕</button>
-                                <button class="btn-cancel" onclick="openEditListModal()" style="padding: 10px; font-size: 1.2rem; background: transparent; border: none; flex: 1; min-height: 48px;">⚙️</button>
+                            <div id="owner-controls" style="display: none; align-items: center; justify-content: space-around; margin-top: 25px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 100px; padding: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 250px; margin-left: auto; margin-right: auto;">
+                                <button onclick="copyListLink(this)" style="padding: 8px; font-size: 1.1rem; background: transparent; border: none; flex: 1; border-right: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.2s;">🔗</button>
+                                <button onclick="addNewCategory()" style="padding: 8px; font-size: 1.1rem; background: transparent; border: none; flex: 1; border-right: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.2s;">➕</button>
+                                <button onclick="openEditListModal()" style="padding: 8px; font-size: 1.1rem; background: transparent; border: none; flex: 1; color: var(--text-main); cursor: pointer; transition: all 0.2s;">⚙️</button>
                             </div>
                         </div>
                     </div>
@@ -134,34 +210,101 @@
 
     <!-- Bottom Navigation Bar for Phone -->
     <nav class="bottom-nav">
-        <a href="/" class="bottom-nav-item active">
+        <a href="/" class="bottom-nav-item active" style="flex:1;" onclick="document.querySelectorAll('.bottom-nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');">
             <div class="icon icon-svg icon-home"></div>
             <span class="label">Home</span>
         </a>
-        <a href="#" onclick="openMyListsModal()" class="bottom-nav-item" id="nav-my-lists-bottom">
-            <div class="icon icon-svg icon-lists"></div>
-            <span class="label">Lijstjes</span>
+        
+        <a href="#" onclick="event.preventDefault(); window.showShopsPage(); document.querySelectorAll('.bottom-nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');" class="bottom-nav-item" style="flex:1;">
+            <div class="icon icon-svg icon-shop"></div>
+            <span class="label">Winkels</span>
         </a>
-        <a href="#" onclick="openNotificationsModal()" class="bottom-nav-item" id="nav-notifications-bottom" style="position: relative;">
+        
+        <div style="flex: 1; display: flex; justify-content: center; position: relative;">
+            <a href="#" onclick="event.preventDefault(); openCreateModal();" style="position: absolute; top: -25px; z-index: 10; text-decoration: none;">
+                <div style="background-color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); border: 5px solid var(--card-bg); transition: transform 0.2s;">
+                    <span style="font-size: 2.5rem; color: white; font-weight: bold; line-height: 1; margin-top: -4px;">+</span>
+                </div>
+            </a>
+        </div>
+
+        <a href="#" id="nav-notifications-bottom" onclick="event.preventDefault(); openNotificationsModal(); document.querySelectorAll('.bottom-nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');" class="bottom-nav-item" style="flex:1; position: relative;">
             <div class="icon icon-svg icon-bell"></div>
             <span class="label">Meldingen</span>
-            <span id="notif-badge-bottom" style="display:none; position:absolute; top:2px; right:20px; background:var(--error-color); color:white; border-radius:50%; font-size:0.6rem; padding:1px 5px;">0</span>
+            <span id="nav-notifications-badge-bottom" style="display: none; position: absolute; top: 5px; right: 20%; background: var(--error-color); color: white; font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--card-bg);">0</span>
         </a>
-        <a href="/login.html" class="bottom-nav-item">
+        
+        <a href="#" onclick="event.preventDefault(); window.openAccountPage(); document.querySelectorAll('.bottom-nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active');" class="bottom-nav-item" style="flex:1;">
             <div class="icon icon-svg icon-account"></div>
             <span class="label">Account</span>
         </a>
     </nav>
 
+    <!-- Modal Add Category -->
+    <div id="modal-add-category" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Nieuwe categorie toevoegen</h3>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Naam van categorie</label>
+                <input type="text" id="modal-category-name" placeholder="Bijv. Wonen">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                <button onclick="closeModals()" style="flex: 1; padding: 14px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-weight: bold; cursor: pointer;">Annuleren</button>
+                <button id="btn-confirm-add-category" onclick="confirmAddCategory()" style="flex: 1; padding: 14px; background: var(--primary); border: none; border-radius: var(--radius-md); color: white; font-weight: bold; cursor: pointer;">Toevoegen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crop -->
+    <div id="modal-crop" class="modal-overlay" style="z-index: 10001;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 style="margin-bottom: 1rem;">Foto bijsnijden</h3>
+            <div style="width: 100%; max-height: 400px; margin-bottom: 1rem;">
+                <img id="crop-image" style="max-width: 100%; display: block;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('modal-crop').style.display='none'; if(window.cropper) window.cropper.destroy();" style="flex: 1; padding: 14px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-weight: bold; cursor: pointer;">Annuleren</button>
+                <button id="btn-crop-confirm" style="flex: 1; padding: 14px; background: var(--primary); border: none; border-radius: var(--radius-md); color: white; font-weight: bold; cursor: pointer;">Klaar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crop -->
+    <div id="modal-crop" class="modal-overlay" style="z-index: 10001;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 style="margin-bottom: 1rem;">Foto bijsnijden</h3>
+            <div style="width: 100%; max-height: 400px; margin-bottom: 1rem;">
+                <img id="crop-image" style="max-width: 100%; display: block;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('modal-crop').style.display='none'; if(window.cropper) window.cropper.destroy();" style="flex: 1; padding: 14px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-weight: bold; cursor: pointer;">Annuleren</button>
+                <button id="btn-crop-confirm" style="flex: 1; padding: 14px; background: var(--primary); border: none; border-radius: var(--radius-md); color: white; font-weight: bold; cursor: pointer;">Klaar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="modal-confirm" class="modal-overlay" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 id="modal-confirm-title" style="margin-bottom: 1rem; color: var(--text-main);">Weet je het zeker?</h3>
+            <p id="modal-confirm-message" style="color: var(--text-light); margin-bottom: 2rem;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeModals(); if(window.confirmCallback) window.confirmCallback(false);" style="flex: 1; padding: 14px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-weight: bold; cursor: pointer;">Annuleren</button>
+                <button onclick="closeModals(); if(window.confirmCallback) window.confirmCallback(true);" style="flex: 1; padding: 14px; background: var(--error-color); border: none; border-radius: var(--radius-md); color: white; font-weight: bold; cursor: pointer;">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Create List -->
     <div id="modal-create-list" class="modal-overlay">
         <div class="modal-content">
-            <h3>Lijstje personaliseren</h3>
-            <p class="text-light" style="margin-bottom: 1.5rem;">Maak je lijstje persoonlijk met een foto uit je galerij!</p>
+            <h3>Nieuw lijstje maken</h3>
+            <p class="text-light" style="margin-bottom: 1.5rem;">Kies een naam en maak je lijstje persoonlijk met een foto uit je galerij!</p>
             
             <div class="form-group">
-                <label>Jouw unieke link</label>
-                <input type="text" id="modal-list-name" disabled>
+                <label>Kies een naam voor je lijstje *</label>
+                <input type="text" id="modal-list-name-input" placeholder="bijv. verjaardag-max" oninput="document.getElementById('modal-list-url-preview').innerText = 'Jouw link: wonderdev.nl/' + this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');">
+                <small id="modal-list-url-preview" class="text-primary" style="display:block; margin-top:5px; font-weight:600;">Jouw link: wonderdev.nl/</small>
             </div>
             <div class="form-group">
                 <label>Profielfoto (Uploaden uit galerij)</label>
@@ -386,14 +529,43 @@
         </div>
     </div>
 
+    <script>
+        if (!window.crypto) { window.crypto = {}; }
+        if (!window.crypto.randomUUID) {
+            window.crypto.randomUUID = function() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pocketbase/0.23.0/pocketbase.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="/js/app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New update is available, reload to apply
+                                window.location.reload(true);
+                            }
+                        });
+                    });
+                }).catch(err => {
                     console.error('ServiceWorker registration failed: ', err);
+                });
+                
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload(true);
+                    }
                 });
             });
         }
