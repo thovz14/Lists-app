@@ -897,11 +897,11 @@ body {
     -webkit-mask-position: center;
     mask-position: center;
 }
-.icon-home { -webkit-mask-image: url('../assets/images/icons/home-6-svgrepo-com.svg'); mask-image: url('../assets/images/icons/home-6-svgrepo-com.svg'); }
-.icon-lists { -webkit-mask-image: url('../assets/images/icons/list-svgrepo-com.svg'); mask-image: url('../assets/images/icons/list-svgrepo-com.svg'); transform: scale(0.85); }
-.icon-bell { -webkit-mask-image: url('../assets/images/icons/bell-alt-svgrepo-com.svg'); mask-image: url('../assets/images/icons/bell-alt-svgrepo-com.svg'); }
-.icon-account { -webkit-mask-image: url('../assets/images/icons/account-avatar-person-svgrepo-com.svg'); mask-image: url('../assets/images/icons/account-avatar-person-svgrepo-com.svg'); transform: scale(0.85); }
-.icon-shop { -webkit-mask-image: url('../assets/images/icons/shopping-cart-round-1137-svgrepo-com.svg'); mask-image: url('../assets/images/icons/shopping-cart-round-1137-svgrepo-com.svg'); transform: scale(0.85); }
+.icon-home { -webkit-mask-image: url('../images/icons/home-6-svgrepo-com.svg'); mask-image: url('../images/icons/home-6-svgrepo-com.svg'); }
+.icon-lists { -webkit-mask-image: url('../images/icons/list-svgrepo-com.svg'); mask-image: url('../images/icons/list-svgrepo-com.svg'); transform: scale(0.85); }
+.icon-bell { -webkit-mask-image: url('../images/icons/bell-alt-svgrepo-com.svg'); mask-image: url('../images/icons/bell-alt-svgrepo-com.svg'); }
+.icon-account { -webkit-mask-image: url('../images/icons/account-avatar-person-svgrepo-com.svg'); mask-image: url('../images/icons/account-avatar-person-svgrepo-com.svg'); transform: scale(0.85); }
+.icon-shop { -webkit-mask-image: url('../images/icons/shopping-cart-round-1137-svgrepo-com.svg'); mask-image: url('../images/icons/shopping-cart-round-1137-svgrepo-com.svg'); transform: scale(0.85); }
 
 /* Animated Checkmark for Copy Link */
 .animated-check {
