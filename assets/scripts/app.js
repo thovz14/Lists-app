@@ -1,4 +1,4 @@
-const pb = new PocketBase('http://192.168.200.15:8090'); 
+const pb = new PocketBase('https://db.wonderdev.nl/');
 
 let currentListOwnerId = null;
 let currentListId = null;
