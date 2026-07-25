@@ -368,10 +368,14 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="edit-show-afgestreept" style="width: 20px; height: 20px;">
-                        Zelf kunnen zien welke cadeaus al zijn afgestreept
+                <div class="form-group" style="background: var(--bg-color); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="padding-right: 15px;">
+                        <span style="font-weight: 600; display: block; color: var(--text-main); margin-bottom: 4px;">Toon afgestreepte cadeaus</span>
+                        <small class="text-light" style="font-weight: normal; display: block;">Zelf kunnen zien welke cadeaus al zijn afgestreept</small>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="edit-show-afgestreept">
+                        <span class="toggle-slider"></span>
                     </label>
                 </div>
                 
@@ -465,13 +469,14 @@
                         <span class="file-name-display">📸 Klik hier om een foto te kiezen</span>
                     </label>
                 </div>
-                <div class="form-group" style="background: var(--bg-grad-1); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0;">
-                        <div>
-                            <span style="font-weight: 600; display: block; color: var(--text-main);">Mag cadeau afgestreept worden?</span>
-                            <small id="lock-status-text" class="text-light" style="font-weight: normal;">Ja, anderen mogen dit afstrepen.</small>
-                        </div>
-                        <input type="checkbox" id="modal-item-lock" style="width: 24px; height: 24px; accent-color: var(--primary);" onchange="document.getElementById('lock-status-text').innerText = this.checked ? 'Nee, afstrepen is geblokkeerd 🔒' : 'Ja, anderen mogen dit afstrepen.';">
+                <div class="form-group" style="background: var(--bg-grad-1); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="padding-right: 15px;">
+                        <span style="font-weight: 600; display: block; color: var(--text-main); margin-bottom: 4px;">Mag cadeau afgestreept worden?</span>
+                        <small id="lock-status-text" class="text-light" style="font-weight: normal; display: block;">Ja, anderen mogen dit afstrepen.</small>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modal-item-lock" onchange="document.getElementById('lock-status-text').innerText = this.checked ? 'Nee, afstrepen is geblokkeerd 🔒' : 'Ja, anderen mogen dit afstrepen.';">
+                        <span class="toggle-slider"></span>
                     </label>
                 </div>
                 <input type="hidden" id="modal-item-img-url">
