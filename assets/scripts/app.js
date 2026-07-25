@@ -129,6 +129,22 @@ function setupEventListeners() {
     document.getElementById('btn-do-import').addEventListener('click', importFromUrl);
     document.getElementById('import-url').addEventListener('keypress', e => { if (e.key === 'Enter') importFromUrl(); });
     document.getElementById('btn-confirm-add-item').addEventListener('click', addItem);
+
+    const priceInputs = ['modal-item-price', 'edit-gift-price'];
+    priceInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9.,€\s]/g, '');
+            });
+            el.addEventListener('blur', function() {
+                let val = this.value.trim();
+                if (val && !val.startsWith('€')) {
+                    this.value = '€ ' + val;
+                }
+            });
+        }
+    });
 }
 
 // Haal eigen lijstjes op en open de modal (of als fallback)
@@ -715,8 +731,10 @@ async function loadGifts(listId) {
                     }
                 }
 
+                const showAsDone = gift.afgestreept && (!hasManageRights || currentListShowAfgestreept);
+
                 return `
-                <div class="item-row ${gift.afgestreept ? 'item-done' : ''}" data-id="${gift.id}" style="align-items: flex-start;">
+                <div class="item-row ${showAsDone ? 'item-done' : ''}" data-id="${gift.id}" style="align-items: flex-start;">
                     <div class="item-details" style="flex: 1;">
                         <h4 style="font-size: 1.25rem; margin-bottom: 5px;">${gift.title}</h4>
                         <p style="margin-bottom: 15px;">${priceText} ${webshopText}</p>
