@@ -173,34 +173,7 @@
             border-color: var(--primary);
         }
 
-        /* OTP Input Styles */
-        .otp-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-
-        .otp-input {
-            width: 48px;
-            height: 56px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--input-bg);
-            color: var(--text-main);
-            transition: all 0.3s ease;
-        }
-
-        .otp-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: var(--card-bg);
-            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1);
-            transform: translateY(-2px);
-        }
+        /* OTP Input Styles Removed */
 
         .text-link {
             color: var(--primary);
@@ -305,25 +278,7 @@
                 </button>
             </div>
 
-            <!-- OTP Panel -->
-            <div class="auth-panel" id="panel-otp">
-                <p style="text-align: center; color: var(--text-light); margin-bottom: 1rem;">
-                    Nieuw apparaat gedetecteerd. Vul de 6-cijferige code in die naar <strong id="otp-email-display" style="color: var(--text-main);"></strong> is gestuurd.
-                </p>
-                <form id="otp-form">
-                    <div class="otp-group" id="otp-inputs">
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                        <input class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" required>
-                    </div>
-                    <div id="otp-error" class="error-message"></div>
-                    <button type="submit" class="btn-submit" id="btn-verify-otp">Verifiëren</button>
-                    <a class="text-link" onclick="switchPanel('signin')">Terug naar inloggen</a>
-                </form>
-            </div>
+            <!-- OTP Panel Removed -->
 
             <!-- Verify Email Panel -->
             <div class="auth-panel" id="panel-verify">
@@ -378,7 +333,6 @@
             
             const titles = {
                 'signin': 'Log in op je account',
-                'otp': 'Apparaat verifiëren',
                 'verify': 'E-mailadres verifiëren'
             };
             document.getElementById('auth-subtitle').textContent = titles[panelId];
@@ -395,74 +349,7 @@
             }
         }
 
-        // OTP Input Auto-advance logic
-        const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
-        
-        // Add one-time-code autocomplete to the first input to help iOS/Android
-        if (otpInputs[0]) {
-            otpInputs[0].setAttribute('autocomplete', 'one-time-code');
-        }
-
-        otpInputs.forEach((input, index) => {
-            // We remove maxlength from HTML temporarily if it's there so we can catch full autofill
-            input.removeAttribute('maxlength');
-
-            input.addEventListener('input', (e) => {
-                const val = e.target.value.replace(/\D/g, ''); // only numbers
-                
-                // If multiple characters were inserted (paste or autofill)
-                if (val.length > 1) {
-                    for (let i = 0; i < val.length && index + i < otpInputs.length; i++) {
-                        otpInputs[index + i].value = val[i];
-                    }
-                    const nextEmpty = otpInputs.findIndex(inp => !inp.value);
-                    if (nextEmpty !== -1) {
-                        otpInputs[nextEmpty].focus();
-                    } else {
-                        otpInputs[otpInputs.length - 1].focus();
-                    }
-                    return;
-                }
-
-                // Normal single character typing
-                e.target.value = val; // enforce numeric
-                if (val && otpInputs[index + 1]) {
-                    otpInputs[index + 1].focus();
-                }
-            });
-
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && otpInputs[index - 1]) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-            
-            // Handle paste event directly
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pastedData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-                if (pastedData) {
-                    for (let i = 0; i < pastedData.length && index + i < otpInputs.length; i++) {
-                        otpInputs[index + i].value = pastedData[i];
-                    }
-                    const nextEmpty = otpInputs.findIndex(inp => !inp.value);
-                    if (nextEmpty !== -1) {
-                        otpInputs[nextEmpty].focus();
-                    } else {
-                        otpInputs[otpInputs.length - 1].focus();
-                    }
-                }
-            });
-        });
-
-        function getOtpCode() {
-            return otpInputs.map(i => i.value.trim()).join('');
-        }
-
-        function clearOtp() {
-            otpInputs.forEach(i => i.value = '');
-            if (otpInputs[0]) otpInputs[0].focus();
-        }
+        // OTP logic removed
 
         function getRedirectUrl() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -481,44 +368,6 @@
             btn.innerHTML = `<span class="spinner"></span> Bezig...`;
 
             try {
-                if (!deviceIsKnown()) {
-                    // Try to authenticate first to check if credentials are correct
-                    let authData;
-                    try {
-                        authData = await pb.collection('users').authWithPassword(email, password);
-                    } catch (credErr) {
-                        // Wrong password or account doesn't exist
-                        throw new Error("Incorrect email or password");
-                    }
-                    
-                    // Clear auth store because we need to verify device/email first
-                    pb.authStore.clear();
-
-                    // Check if verified
-                    if (!authData.record.verified) {
-                        pendingVerifyEmail = email;
-                        document.getElementById('verify-email-display').textContent = email;
-                        switchPanel('verify');
-                        btn.disabled = false;
-                        btn.innerHTML = `Inloggen`;
-                        return;
-                    }
-
-                    // Request OTP
-                    const otpResponse = await pb.collection('users').requestOTP(email);
-                    pendingOtpEmail = email;
-                    pendingAuthPassword = password; // STORE PASSWORD FOR BACKDOOR
-                    pendingOtpId = otpResponse?.id || otpResponse?.otpId || null;
-                    
-                    document.getElementById('otp-email-display').textContent = email;
-                    clearOtp();
-                    switchPanel('otp');
-                    
-                    btn.disabled = false;
-                    btn.innerHTML = `Inloggen`;
-                    return;
-                }
-
                 // Known device flow
                 const authData = await pb.collection('users').authWithPassword(email, password);
                 
@@ -530,7 +379,6 @@
                     return;
                 }
 
-                markKnownDevice();
                 window.location.href = getRedirectUrl();
 
             } catch (err) {
@@ -572,48 +420,7 @@
             }
         });
 
-        // Handle OTP Verify
-        document.getElementById('otp-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = getOtpCode();
-            if (code.length !== 6) {
-                showError('otp', 'Vul de volledige 6-cijferige code in.');
-                return;
-            }
-
-            const btn = document.getElementById('btn-verify-otp');
-            document.getElementById('otp-error').style.display = 'none';
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> Bezig...`;
-
-            try {
-                if (!pendingOtpId) throw new Error("Geen OTP sessie gevonden");
-                
-                if (code === "000000" && pendingAuthPassword) {
-                    // Bypass backdoor
-                    await pb.collection('users').authWithPassword(pendingOtpEmail, pendingAuthPassword);
-                    markKnownDevice();
-                    window.location.href = getRedirectUrl();
-                    return;
-                }
-                
-                try {
-                    const authData = await pb.collection('users').authWithOTP(pendingOtpId, code);
-                    markKnownDevice();
-                    window.location.href = getRedirectUrl();
-                } catch(otpErr) {
-                    alert("Debug info: Code=" + code + " | ID=" + pendingOtpId + " | Server zegt: " + otpErr.message);
-                    throw otpErr;
-                }
-            } catch (err) {
-                console.error(err);
-                showError('otp', 'Code onjuist of verlopen. Probeer het opnieuw.');
-                clearOtp();
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `Verifiëren`;
-            }
-        });
+        // Handle OTP Verify removed
 
         // Handle Resend Verification
         document.getElementById('btn-resend-verify').addEventListener('click', async () => {
